@@ -14,8 +14,14 @@ class Speak_worker {
   public:
     Speak_worker();
     ~Speak_worker();
-    void say();
+    void say(const std::wstring &text);
     void getVoices(std::vector<std::string> &voices);
+    void getVoice(std::string &voice);
+    void setVoice(const std::string &voice);
+    void setVolume(unsigned int vol);
+    unsigned int getVolume();
+    void setRate(int rate);
+    int getRate();
     bool getStatus();
 
   private:
