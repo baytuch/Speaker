@@ -53,17 +53,17 @@ void Speak_worker::getVoices(std::vector<std::string> &voices){
         HRESULT res = voice_info_obj->EnumKeys(key_n, &key_name);
         if (SUCCEEDED(res) && key_n < key_n_max){
           if (wcscmp(key_name, target_key_name) == 0) break;
-	    } else {
+        } else {
           break;
-	    }
+        }
         key_n++;
-	  }
+      }
       voice_info_obj->OpenKey(key_name, &voice_info_data);
       voice_info_data->GetStringValue(value_name, &voice_name);
       voices.push_back(std::string(CW2A(voice_name)));
       voice_info_obj.Release();
       voice_info_data.Release();
-	}
+    }
   }
   if (voices.size() == voice_len) this->status = true;
 }
