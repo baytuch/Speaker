@@ -2,9 +2,15 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "configer.h"
 #include "speak_worker.h"
 
 int main(){
+  Configer cfg = Configer();
+  char *name = cfg.getVoiceName();
+  std::cout << name << std::endl;
+  //free(name);
+  /*
   std::vector<std::string> voices;
   std::string voice;
   unsigned int vol = 0;
@@ -46,4 +52,5 @@ int main(){
       sp.say(L"Привіт, як справи");
 	}
   }
+  */
 }
