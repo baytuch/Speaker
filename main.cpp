@@ -3,12 +3,16 @@
 #include <string>
 #include <vector>
 #include "configer.h"
+#include "sleep.h"
 #include "speak_worker.h"
+#include "speak_controller.h"
 
 int main(){
   Configer cfg = Configer();
   char *name = cfg.getVoiceName();
   std::cout << name << std::endl;
+  Speak_controller sc = Speak_controller();
+  Sleep(5000);
   //free(name);
   /*
   std::vector<std::string> voices;

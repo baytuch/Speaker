@@ -15,5 +15,6 @@ char *strcopy(const char *source){
 char *strinit(const unsigned int str_size){
   char *res;
   res = (char*) malloc((size_t) (str_size + 1) * sizeof(char));
+  memset(res, 0x00, (size_t) (str_size + 1) * sizeof(char));
   return res;
 }
