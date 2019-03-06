@@ -1,6 +1,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include "sleep.h"
 #include "utils.h"
 
 
@@ -17,4 +18,10 @@ char *strinit(const unsigned int str_size){
   res = (char*) malloc((size_t) (str_size + 1) * sizeof(char));
   memset(res, 0x00, (size_t) (str_size + 1) * sizeof(char));
   return res;
+}
+
+void waiter(bool &flag){
+  while (flag){
+    Sleep(100);
+  }
 }
