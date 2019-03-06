@@ -12,7 +12,12 @@ int main(){
   char *name = cfg.getVoiceName();
   std::cout << name << std::endl;
   Speak_controller sc = Speak_controller();
-  Sleep(5000);
+  for (unsigned int n = 0; n < 10; n++){
+    sc.tell("test");
+    Sleep(600);
+  }
+  sc.stop();
+  //Sleep(10000);
   //free(name);
   /*
   std::vector<std::string> voices;
