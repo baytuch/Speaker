@@ -46,6 +46,7 @@ void *Speak_controller::init_loop(void *vptr_args){
 
 void Speak_controller::worker_init(){
   this->worker = Speak_worker();
+  this->worker.setVoice("Natalia");
 }
 
 void Speak_controller::worker_stop(){
@@ -92,8 +93,7 @@ void Speak_controller::worker_do(){
       this->pull_n++;
     }
     this->push_lock = false;
-    std::cout << "say: " << oration << std::endl;
-    this->worker.say(L"test");
+    this->worker.say(oration);
     free(oration);
   }
 }

@@ -1,10 +1,13 @@
 
 #include <iostream>
+#include <stdlib.h>
+#include <string.h>
 #include <string>
 #include <vector>
 #include <atlbase.h>
 #include <sapi.h>
 #include <sphelper.h>
+#include "utils.h"
 #include "speak_worker.h"
 
 
@@ -23,13 +26,18 @@ Speak_worker::~Speak_worker(){
   CoUninitialize();
 }
 
-void Speak_worker::say(const std::wstring &text){
+void Speak_worker::say(const char *oration){
+  wchar_t *w_oration;
+  size_t oration_len = strlen(oration);
+  w_oration = w_strinit(oration_len);
+  MultiByteToWideChar(CP_ACP, 0, oration, -1, w_oration, oration_len);
   this->status = false;
-  HRESULT hr = this->voice->Speak(text.c_str(), SPF_ASYNC | SPF_IS_XML, NULL);
+  HRESULT hr = this->voice->Speak(w_oration, SPF_ASYNC | SPF_IS_XML, NULL);
   if (SUCCEEDED(hr)){
     this->voice->WaitUntilDone(INFINITE);
     this->status = true;
   }
+  free(w_oration);
 }
 
 void Speak_worker::getVoices(std::vector<std::string> &voices){
@@ -96,16 +104,17 @@ void Speak_worker::getVoice(std::string &voice){
   if (!voice.empty()) this->status = true;
 }
 
-void Speak_worker::setVoice(const std::string &voice){
+void Speak_worker::setVoice(const char *voice){
   CComPtr<ISpObjectToken> voice_info_obj = NULL;
+  wchar_t *optionalAttributes = L"";
+  std::string str_voice = std::string(voice);
   std::wstring attributes;
-  std::wstring optionalAttributes = L"";
   attributes.clear();
   attributes.append(L"Name=");
-  attributes.append(voice.begin(), voice.end());
+  attributes.append(str_voice.begin(), str_voice.end());
   attributes.append(L";");
   this->status = false;
-  HRESULT res = SpFindBestToken(SPCAT_VOICES, attributes.c_str(), optionalAttributes.c_str(), &voice_info_obj);
+  HRESULT res = SpFindBestToken(SPCAT_VOICES, attributes.c_str(), optionalAttributes, &voice_info_obj);
   if (SUCCEEDED(res)){
     this->voice->SetVoice(voice_info_obj);
     this->status = true;

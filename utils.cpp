@@ -20,6 +20,13 @@ char *strinit(const unsigned int str_size){
   return res;
 }
 
+wchar_t *w_strinit(const unsigned int str_size){
+  wchar_t *res;
+  res = (wchar_t*) malloc((size_t) (str_size + 1) * sizeof(wchar_t));
+  memset(res, 0x00, (size_t) (str_size + 1) * sizeof(wchar_t));
+  return res;
+}
+
 void waiter(bool &flag){
   while (flag){
     Sleep(100);

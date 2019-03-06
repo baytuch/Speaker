@@ -12,8 +12,10 @@ int main(){
   char *name = cfg.getVoiceName();
   std::cout << name << std::endl;
   Speak_controller sc = Speak_controller();
-  for (unsigned int n = 0; n < 10; n++){
-    sc.tell("test");
+  for (unsigned int n = 0; n < 1000; n++){
+    sc.tell("ѕрив≥т");
+    sc.tell("як справи");
+    //sc.tell("test");
     Sleep(600);
   }
   sc.stop();
