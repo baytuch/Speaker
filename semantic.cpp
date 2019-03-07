@@ -10,14 +10,14 @@
 Semantic::Semantic(const char *smt_db){
   this->load_status = false;
   this->parse_status = false;
+  this->status = false;
   this->pattern_db.clear();
   this->load(smt_db);
   if (this->load_status){
     this->parse();
   }
-  for (unsigned int n = 0; n < this->pattern_db.size(); n++){
-    std::cout << this->pattern_db[n].pattern << std::endl;
-    std::cout << this->pattern_db[n].code << std::endl;
+  if (this->pattern_db.size() > 0){
+    this->status = true;
   }
 }
 
@@ -84,4 +84,27 @@ void Semantic::parse(){
       json_object_clear(json);
     }
   }
+}
+
+char *Semantic::compiler(const char *code){
+  std::string str_res = "";
+  std::string str_code = std::string(code);
+  size_t code_id = 0;
+  bool search_status = false;
+  for (unsigned int n = 0; n < this->pattern_db.size(); n++){
+    if (str_code.find(this->pattern_db[n].code) != std::string::npos){
+      code_id = (size_t) n;
+      search_status = true;
+    }
+  }
+  if (search_status){
+    str_res = this->pattern_db[code_id].pattern;
+  } else {
+    str_res = this->pattern_db[0].pattern;
+  }
+  return strcopy(str_res.c_str());
+}
+
+bool Semantic::getStatus(){
+  return this->status;
 }

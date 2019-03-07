@@ -12,6 +12,8 @@
 int main(){
   Configer cfg = Configer();
   Semantic smt = Semantic("smt.json");
+  char *speech = smt.compiler("hello_world");
+  std::cout << speech << std::endl;
 
   /*
   Base_link bl = Base_link("mqtt.it-hobby.km.ua", 1883, false);

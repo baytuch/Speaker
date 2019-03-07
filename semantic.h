@@ -15,12 +15,15 @@ class Semantic {
   public:
     Semantic(const char *smt_db);
     ~Semantic();
+    char *compiler(const char *code);
+    bool getStatus();
 
   private:
     char *buff;
     bool load_status;
     std::vector<Smt_pattern> pattern_db;
     bool parse_status;
+    bool status;
     void load(const char *smt_db);
     void parse();
 
