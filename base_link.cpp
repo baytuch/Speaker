@@ -92,6 +92,7 @@ void Base_link::client_rx(){
   MQTTClient_message *pubmsg;
   char *topic_name = NULL;
   int topic_len = 0;
+  int body_len = 0;
   this->client_rx_status = false;
   MQTTClient_create(&client, this->mqtt_host, Base_link::mqtt_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
   conn_opts.keepAliveInterval = 20;
@@ -101,11 +102,14 @@ void Base_link::client_rx(){
   if (MQTTClient_connect(client, &conn_opts) == MQTTCLIENT_SUCCESS){
     if (MQTTClient_receive(client, &topic_name, &topic_len, &pubmsg, 500L) == MQTTCLIENT_SUCCESS){
       if (topic_name){
-        strncpy(this->rx_topic, topic_name, Base_link::rx_topic_length);
-        strncpy(this->rx_body, (char *) pubmsg->payload, Base_link::rx_body_length);
+        body_len = pubmsg->payloadlen;
+        if (topic_len < Base_link::rx_topic_length - 1 && body_len < Base_link::rx_body_length - 1){
+          strncpy(this->rx_topic, topic_name, (size_t) topic_len);
+          strncpy(this->rx_body, (char *) pubmsg->payload, (size_t) body_len);
+          this->client_rx_status = true;
+        }
         MQTTClient_free(topic_name);
         MQTTClient_freeMessage(&pubmsg);
-        this->client_rx_status = true;
       }
     }
     MQTTClient_disconnect(client, 10000);
