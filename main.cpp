@@ -11,7 +11,7 @@ int main(){
   Configer cfg = Configer();
 
   Base_link bl = Base_link("mqtt.it-hobby.km.ua", 1883, false);
-  Sleep(10000);
+  Sleep(10000000);
   bl.stop();
 
   /*
