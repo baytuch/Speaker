@@ -2,14 +2,18 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "configer.h"
 #include "sleep.h"
+#include "configer.h"
 #include "base_link.h"
 #include "speak_controller.h"
+#include "semantic.h"
+
 
 int main(){
   Configer cfg = Configer();
+  Semantic smt = Semantic("smt.json");
 
+  /*
   Base_link bl = Base_link("mqtt.it-hobby.km.ua", 1883, false);
   //Sleep(10000000);
   for (unsigned int n = 0; n < 1000; n++){
@@ -23,7 +27,7 @@ int main(){
     Sleep(5000);
   }
   bl.stop();
-
+  */
   /*
   char *name = cfg.getVoiceName();
   std::cout << name << std::endl;
