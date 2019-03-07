@@ -1,7 +1,5 @@
 
 #include <iostream>
-#include <string>
-#include <vector>
 #include "sleep.h"
 #include "configer.h"
 #include "base_link.h"
@@ -10,36 +8,24 @@
 
 
 int main(){
-  Configer cfg = Configer();
-  Semantic smt = Semantic("smt.json");
-  char *speech = smt.compiler("hello_world");
-  std::cout << speech << std::endl;
 
-  /*
+  Configer cfg = Configer();
   Base_link bl = Base_link("mqtt.it-hobby.km.ua", 1883, false);
-  //Sleep(10000000);
-  for (unsigned int n = 0; n < 1000; n++){
+  Speak_controller sc = Speak_controller();
+  Semantic smt = Semantic("smt.json");
+  char *oration;
+
+  while(true) {
     Link_message msg = bl.rx();
     if (msg.flag){
-      std::cout << "topic: " << msg.topic << std::endl;
-      std::cout << "body: " << msg.body << std::endl;
+      oration = smt.compiler(msg.body);
+      std::cout << oration << std::endl;
+      sc.tell(oration);
     }
+    //free(oration);
     free(msg.topic);
     free(msg.body);
-    Sleep(5000);
+    Sleep(250);
   }
-  bl.stop();
-  */
-  /*
-  char *name = cfg.getVoiceName();
-  std::cout << name << std::endl;
-  Speak_controller sc = Speak_controller();
-  for (unsigned int n = 0; n < 1000; n++){
-    sc.tell("ѕрив≥т");
-    sc.tell("як справи");
-    //sc.tell("test");
-    Sleep(600);
-  }
-  sc.stop();
-  */
+
 }

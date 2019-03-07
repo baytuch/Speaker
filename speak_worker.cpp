@@ -27,17 +27,27 @@ Speak_worker::~Speak_worker(){
 }
 
 void Speak_worker::say(const char *oration){
-  wchar_t *w_oration;
-  size_t oration_len = strlen(oration);
-  w_oration = w_strinit(oration_len);
-  MultiByteToWideChar(CP_ACP, 0, oration, -1, w_oration, oration_len);
+  //wchar_t *w_oration;
+  //size_t oration_len = strlen(oration);
+  //w_oration = w_strinit(oration_len);
+  //MultiByteToWideChar(CP_ACP, 0, oration, -1, w_oration, oration_len);
+
+  int size;
+  size = MultiByteToWideChar(CP_UTF8, 0, oration, -1, 0, 0);
+  std::wstring wstr(size, 0);
+  MultiByteToWideChar(CP_UTF8, 0, oration, -1, &wstr[0], size);
+  int codepage = 1251;
+  size = WideCharToMultiByte(codepage, 0, &wstr[0], -1, 0, 0, 0, 0);
+  std::string str(size, 0);
+  WideCharToMultiByte(codepage, 0, &wstr[0], -1, &str[0], size, 0, 0);
+
   this->status = false;
-  HRESULT hr = this->voice->Speak(w_oration, SPF_ASYNC | SPF_IS_XML, NULL);
+  HRESULT hr = this->voice->Speak(wstr.c_str(), SPF_ASYNC | SPF_IS_XML, NULL);
   if (SUCCEEDED(hr)){
     this->voice->WaitUntilDone(INFINITE);
     this->status = true;
   }
-  free(w_oration);
+  //free(w_oration);
 }
 
 void Speak_worker::getVoices(std::vector<std::string> &voices){
