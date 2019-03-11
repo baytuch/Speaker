@@ -19,6 +19,7 @@ Speak_controller::Speak_controller(){
   this->push_n = 0;
   this->pull_n = 0;
   this->push_lock = false;
+  this->buffer_overflow = false;
   pthread_create(&this->loop_tid, NULL, Speak_controller::init_loop, this);
 }
 
@@ -59,20 +60,26 @@ bool Speak_controller::tell(const char *oration){
   size_t oration_length = strlen(oration);
   char c = 0x00;
   if (oration_length < Speak_controller::say_length){
-    for (unsigned int n = 0; n < Speak_controller::say_length; n++){
-      if (n < oration_length){
-        c = oration[n];
+    if ((this->pull_n > 0 && this->push_n == this->pull_n + 1) ||
+        (this->pull_n == 0 && this->push_n == Speak_controller::say_size - 1)){
+        this->buffer_overflow = true;
       } else {
-        c = 0x00;
+      for (unsigned int n = 0; n < Speak_controller::say_length; n++){
+        if (n < oration_length){
+          c = oration[n];
+        } else {
+          c = 0x00;
+        }
+        this->loop_buffer[this->push_n * Speak_controller::say_length + n] = c;
       }
-      this->loop_buffer[this->push_n * Speak_controller::say_length + n] = c;
+      if (this->push_n >= Speak_controller::say_size - 1){
+        this->push_n = 0;
+      } else {
+        this->push_n++;
+      }
+      res = true;
+      this->buffer_overflow = false;
     }
-    if (this->push_n >= Speak_controller::say_size - 1){
-      this->push_n = 0;
-    } else {
-      this->push_n++;
-    }
-    res = true;
   }
   return res;
 }

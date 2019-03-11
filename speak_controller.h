@@ -24,6 +24,7 @@ class Speak_controller {
     unsigned int push_n;
     unsigned int pull_n;
     bool push_lock;
+    bool buffer_overflow;
     void loop();
     static void *init_loop(void *vptr_args);
     void worker_init();
