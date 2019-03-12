@@ -15,6 +15,11 @@ int main(){
   Semantic smt = Semantic("smt.json");
   char *oration;
 
+  Link_message tx_msg;
+  tx_msg.topic = "test2";
+  tx_msg.body = "hello";
+  tx_msg.flag = 0;
+
   while(true) {
     Link_message msg = bl.rx();
     if (msg.flag){
@@ -25,7 +30,7 @@ int main(){
     //free(oration);
     free(msg.topic);
     free(msg.body);
-    Sleep(250);
+    Sleep(1000);
   }
 
 }
