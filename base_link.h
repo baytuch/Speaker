@@ -37,6 +37,7 @@ class Base_link {
     bool link_is_stop;
     bool client_subscribe_status;
     bool client_rx_status;
+    bool client_tx_status;
     bool rx_push_lock;
     bool tx_push_lock;
     bool rx_buffer_overflow;
@@ -56,6 +57,7 @@ class Base_link {
     void link_stop();
     void client_subscribe(const char *topic);
     void client_rx();
+    void client_tx();
     void rx_push();
     void tx_pull();
 

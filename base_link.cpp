@@ -34,6 +34,7 @@ Base_link::Base_link(const char *host, const unsigned int &port, const bool &ssl
   this->link_is_stop = true;
   this->client_subscribe_status = false;
   this->client_rx_status = false;
+  this->client_tx_status = false;
   this->rx_push_lock = false;
   this->tx_push_lock = false;
   this->rx_buffer_overflow = false;
@@ -51,6 +52,7 @@ void Base_link::loop(){
     Sleep(1000);
     std::cout << "link do" << std::endl;
     this->link_do();
+    this->tx_pull();
   }
   this->link_stop();
   this->link_is_stop = false;
@@ -128,6 +130,32 @@ void Base_link::client_rx(){
     MQTTClient_destroy(&client);
   } else {
     this->client_rx_status = false;
+    std::cout << "Link: error connect!" << std::endl;
+  }
+}
+
+void Base_link::client_tx(){
+  MQTTClient client;
+  MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+  MQTTClient_message pubmsg = MQTTClient_message_initializer;
+  MQTTClient_deliveryToken token;
+  this->client_tx_status = false;
+  MQTTClient_create(&client, this->mqtt_host, Base_link::mqtt_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+  conn_opts.keepAliveInterval = 20;
+  conn_opts.cleansession = 0;
+  if (MQTTClient_connect(client, &conn_opts) == MQTTCLIENT_SUCCESS){
+    pubmsg.payload = (char*) this->tx_body;
+    pubmsg.payloadlen = strlen(this->tx_body);
+    pubmsg.qos = 2;
+    pubmsg.retained = 0;
+    MQTTClient_publishMessage(client, this->tx_topic, &pubmsg, &token);
+    if (MQTTClient_waitForCompletion(client, token, 10000L) == MQTTCLIENT_SUCCESS){
+      this->client_tx_status = true;
+    }
+    MQTTClient_disconnect(client, 10000);
+    MQTTClient_destroy(&client);
+  } else {
+    this->client_tx_status = false;
     std::cout << "Link: error connect!" << std::endl;
   }
 }
@@ -221,6 +249,7 @@ bool Base_link::tx(Link_message msg){
       } else {
         this->tx_push_n++;
       }
+      std::cout << "tx_push_n: " << tx_push_n << std::endl;
       this->tx_buffer_overflow = false;
       res = true;
     }
@@ -230,10 +259,10 @@ bool Base_link::tx(Link_message msg){
 
 void Base_link::tx_pull(){
   char c = 0x00;
-  this->tx_push_lock = true;
   if (this->tx_pull_n != this->tx_push_n){
     memset(this->tx_topic, 0x00, Base_link::tx_topic_length);
     memset(this->tx_body, 0x00, Base_link::tx_body_length);
+    this->tx_push_lock = true;
     for (unsigned int n = 0; n < Base_link::tx_topic_length + Base_link::tx_body_length; n++){
       c = this->tx_loop_buffer[this->tx_pull_n * (Base_link::tx_topic_length + Base_link::tx_body_length) + n];
       if (n < Base_link::tx_topic_length){
@@ -247,9 +276,10 @@ void Base_link::tx_pull(){
     } else {
       this->tx_pull_n++;
     }
+    this->tx_push_lock = false;
+    this->client_tx();
     std::cout << "tx_pull_n: " << tx_pull_n << std::endl;
   }
-  this->tx_push_lock = false;
 }
 
 void Base_link::stop(){
