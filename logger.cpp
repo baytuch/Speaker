@@ -10,6 +10,10 @@ const unsigned int Logger::msg_length = 256;
 
 bool Logger::update_lock = false;
 
+Logger::Logger(){
+  Logger::update_lock = false;
+}
+
 Logger::Logger(const char *srv_name, const char *log_file){
   this->srv_name = strcopy(srv_name);
   this->log_file = strcopy(log_file);

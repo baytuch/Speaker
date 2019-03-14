@@ -5,6 +5,7 @@
 #include "base_link.h"
 #include "speak_controller.h"
 #include "semantic.h"
+#include "logger.h"
 
 
 int main(){
@@ -13,7 +14,10 @@ int main(){
   Base_link bl = Base_link("mqtt.it-hobby.km.ua", 1883, false);
   Speak_controller sc = Speak_controller();
   Semantic smt = Semantic("smt.json");
+  Logger logger("CORE");
   char *oration;
+
+  logger << "init...";
 
   Link_message tx_msg;
   tx_msg.topic = "test2";
@@ -25,7 +29,7 @@ int main(){
     bl.tx(tx_msg);
     if (msg.flag){
       oration = smt.compiler(msg.body);
-      std::cout << oration << std::endl;
+      logger << oration;
       sc.tell(oration);
     }
     //free(oration);

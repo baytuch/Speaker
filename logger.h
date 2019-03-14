@@ -2,11 +2,16 @@
 #ifndef LOGGER_H_INCLUDED
 #define LOGGER_H_INCLUDED
 
+#ifndef SP_LOG
+#define SP_LOG "voice.log"
+#endif
+
 class Logger {
 
   public:
 
-    Logger(const char *srv_name, const char *log_file);
+    Logger();
+    Logger(const char *srv_name, const char *log_file = SP_LOG);
     ~Logger();
     void operator<< (const char *msg);
 

@@ -3,6 +3,7 @@
 #define BASE_LINK_H_INCLUDED
 
 #include <pthread.h>
+#include "logger.h"
 
 struct Link_message {
   char *topic;
@@ -43,6 +44,7 @@ class Base_link {
     bool rx_buffer_overflow;
     bool tx_buffer_overflow;
     pthread_t loop_tid;
+    Logger logger;
     static const char *mqtt_id;
     static const unsigned int rx_topic_length;
     static const unsigned int rx_body_length;

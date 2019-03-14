@@ -3,6 +3,7 @@
 #define SPEAK_CONTROLLER_H_INCLUDED
 
 #include <pthread.h>
+#include "logger.h"
 #include "speak_worker.h"
 
 class Speak_controller {
@@ -21,6 +22,7 @@ class Speak_controller {
     bool worker_run;
     bool worker_is_stop;
     pthread_t loop_tid;
+    Logger logger;
     unsigned int push_n;
     unsigned int pull_n;
     bool push_lock;

@@ -5,6 +5,7 @@
 #include <MQTTClient.h>
 #include "sleep.h"
 #include "utils.h"
+#include "logger.h"
 #include "base_link.h"
 
 
@@ -39,6 +40,7 @@ Base_link::Base_link(const char *host, const unsigned int &port, const bool &ssl
   this->tx_push_lock = false;
   this->rx_buffer_overflow = false;
   this->tx_buffer_overflow = false;
+  this->logger = Logger("BASE LINK");
   pthread_create(&this->loop_tid, NULL, Base_link::init_loop, this);
 }
 
@@ -46,17 +48,17 @@ Base_link::~Base_link(){
 }
 
 void Base_link::loop(){
-  std::cout << "link init" << std::endl;
+  this->logger << "link init";
   this->link_init();
   while(this->link_run){
     Sleep(1000);
-    std::cout << "link do" << std::endl;
+    this->logger << "link do";
     this->link_do();
     this->tx_pull();
   }
   this->link_stop();
   this->link_is_stop = false;
-  std::cout << "link stop" << std::endl;
+  this->logger << "link stop";
 }
 
 void *Base_link::init_loop(void *vptr_args){
@@ -90,13 +92,13 @@ void Base_link::client_subscribe(const char *topic){
   if (MQTTClient_connect(client, &conn_opts) == MQTTCLIENT_SUCCESS){
     if (MQTTClient_subscribe(client, topic, 2) == MQTTCLIENT_SUCCESS){
       this->client_subscribe_status = true;
-      std::cout << "subscribed" << std::endl;
+      this->logger << "subscribed";
     }
     MQTTClient_disconnect(client, 10000);
     MQTTClient_destroy(&client);
   } else {
     this->client_rx_status = false;
-    std::cout << "Link: error connect!" << std::endl;
+    this->logger << "Link: error connect!";
   }
 }
 
@@ -130,7 +132,7 @@ void Base_link::client_rx(){
     MQTTClient_destroy(&client);
   } else {
     this->client_rx_status = false;
-    std::cout << "Link: error connect!" << std::endl;
+    this->logger << "Link: error connect!";
   }
 }
 
@@ -156,7 +158,7 @@ void Base_link::client_tx(){
     MQTTClient_destroy(&client);
   } else {
     this->client_tx_status = false;
-    std::cout << "Link: error connect!" << std::endl;
+    this->logger << "Link: error connect!";
   }
 }
 
@@ -186,7 +188,7 @@ void Base_link::rx_push(){
   } else {
     this->rx_push_n++;
   }
-  std::cout << "rx_push_n: " << rx_push_n << std::endl; 
+  std::cout << "rx_push_n: " << rx_push_n << std::endl;
 }
 
 Link_message Base_link::rx(){

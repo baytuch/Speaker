@@ -1,10 +1,10 @@
 
-#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
 #include "utils.h"
 #include "sleep.h"
+#include "logger.h"
 #include "speak_worker.h"
 #include "speak_controller.h"
 
@@ -20,6 +20,7 @@ Speak_controller::Speak_controller(){
   this->pull_n = 0;
   this->push_lock = false;
   this->buffer_overflow = false;
+  this->logger = Logger("SPEAK CONTROL");
   pthread_create(&this->loop_tid, NULL, Speak_controller::init_loop, this);
 }
 
@@ -28,16 +29,15 @@ Speak_controller::~Speak_controller(){
 }
 
 void Speak_controller::loop(){
-  std::cout << "worker init" << std::endl;
+  this->logger << "worker init";
   this->worker_init();
   while(this->worker_run){
     Sleep(250);
-    std::cout << "worker do" << std::endl;
     this->worker_do();
   }
   this->worker_stop();
   this->worker_is_stop = false;
-  std::cout << "worker stop" << std::endl;
+  this->logger << "worker stop";
 }
 
 void *Speak_controller::init_loop(void *vptr_args){
