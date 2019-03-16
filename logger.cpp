@@ -11,7 +11,11 @@ const unsigned int Logger::msg_length = 256;
 bool Logger::update_lock = false;
 
 Logger::Logger(){
+  this->srv_name = strinit(0);
+  this->log_file = strinit(0);
+  this->msg = strinit(Logger::msg_length);
   Logger::update_lock = false;
+  this->default_mode = true;
 }
 
 Logger::Logger(const char *srv_name, const char *log_file){
@@ -19,9 +23,23 @@ Logger::Logger(const char *srv_name, const char *log_file){
   this->log_file = strcopy(log_file);
   this->msg = strinit(Logger::msg_length);
   Logger::update_lock = false;
+  this->default_mode = false;
+}
+
+void Logger::operator= (const Logger &other){
+  free_mem((void *) this->srv_name);
+  free_mem((void *) this->log_file);
+  free_mem((void *) this->msg);
+  this->srv_name = strcopy(other.srv_name);
+  this->log_file = strcopy(other.log_file);
+  this->msg = strinit(Logger::msg_length);
+  this->default_mode = false;
 }
 
 Logger::~Logger(){
+  free_mem((void *) this->srv_name);
+  free_mem((void *) this->log_file);
+  free_mem((void *) this->msg);
 }
 
 void Logger::add_date(){
@@ -71,15 +89,20 @@ void Logger::show_msg(){
 
 void Logger::do_logger(const char *msg){
   const unsigned int msg_max_len = 128;
+  const char *sub_space = " ";
   waiter(Logger::update_lock);
   Logger::update_lock = true;
   memset(this->msg, 0x00, Logger::msg_length);
   this->add_date();
-  this->add_name();
+  if (this->default_mode){
+    strcat(this->msg, sub_space);
+  } else {
+    this->add_name();
+  }
   if (strlen(msg) <= 128){
     strcat(this->msg, msg);
   }
-  this->write_msg();
+  if (!this->default_mode) this->write_msg();
   this->show_msg();
   Logger::update_lock = false;
 }

@@ -13,12 +13,14 @@ class Logger {
     Logger();
     Logger(const char *srv_name, const char *log_file = SP_LOG);
     ~Logger();
+    void operator= (const Logger &other);
     void operator<< (const char *msg);
 
   private:
     char *srv_name;
     char *log_file;
     char *msg;
+    bool default_mode;
     static const unsigned int msg_length;
     static bool update_lock;
     void add_date();

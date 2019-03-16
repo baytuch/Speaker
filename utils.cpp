@@ -27,6 +27,10 @@ wchar_t *w_strinit(const unsigned int str_size){
   return res;
 }
 
+void free_mem(void *ptr){
+  free(ptr);
+}
+
 void waiter(bool &flag){
   while (flag){
     Sleep(100);
