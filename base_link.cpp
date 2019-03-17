@@ -1,5 +1,4 @@
 
-#include <iostream>
 #include <string.h>
 #include <pthread.h>
 #include <MQTTClient.h>
@@ -33,11 +32,13 @@ Base_link::Base_link(const char *host, const unsigned int &port, const bool &ssl
   this->mqtt_ssl = ssl;
   this->link_run = true;
   this->link_is_stop = true;
+  this->init_flag = false;
   this->client_subscribe_status = false;
   this->client_rx_status = false;
-  this->client_tx_status = false;
+  this->client_tx_status = true;
   this->rx_push_lock = false;
   this->tx_push_lock = false;
+  this->tx_buffer_is_empty = false;
   this->rx_buffer_overflow = false;
   this->tx_buffer_overflow = false;
   this->logger = Logger("BASE LINK");
@@ -48,17 +49,15 @@ Base_link::~Base_link(){
 }
 
 void Base_link::loop(){
-  this->logger << "link init";
+  this->logger << "init";
   this->link_init();
   while(this->link_run){
-    Sleep(1000);
-    this->logger << "link do";
     this->link_do();
-    this->tx_pull();
+    Sleep(1000);
   }
   this->link_stop();
   this->link_is_stop = false;
-  this->logger << "link stop";
+  this->logger << "stop";
 }
 
 void *Base_link::init_loop(void *vptr_args){
@@ -67,15 +66,21 @@ void *Base_link::init_loop(void *vptr_args){
 }
 
 void Base_link::link_init(){
-  this->client_subscribe("/test");
+  this->init_flag = true;
 }
 
 void Base_link::link_do(){
-  this->client_rx();
-  if (this->client_rx_status){
-    std::cout << this->rx_topic << std::endl;
-    std::cout << this->rx_body << std::endl;
-    this->rx_push();
+  if (this->init_flag){
+    this->client_subscribe("/test");
+  } else {
+    if (!this->rx_buffer_overflow) this->client_rx();
+    if (this->client_rx_status) this->rx_push();
+    if (this->client_tx_status) this->tx_pull();
+    if (!this->tx_buffer_is_empty) this->client_tx();
+  }
+  if (this->client_subscribe_status && this->init_flag){
+    this->init_flag = false;
+    this->logger << "started";
   }
 }
 
@@ -98,7 +103,7 @@ void Base_link::client_subscribe(const char *topic){
     MQTTClient_destroy(&client);
   } else {
     this->client_rx_status = false;
-    this->logger << "Link: error connect!";
+    this->logger << "error connect!";
   }
 }
 
@@ -132,7 +137,7 @@ void Base_link::client_rx(){
     MQTTClient_destroy(&client);
   } else {
     this->client_rx_status = false;
-    this->logger << "Link: error connect!";
+    this->logger << "error connect!";
   }
 }
 
@@ -158,7 +163,7 @@ void Base_link::client_tx(){
     MQTTClient_destroy(&client);
   } else {
     this->client_tx_status = false;
-    this->logger << "Link: error connect!";
+    this->logger << "error connect!";
   }
 }
 
@@ -166,29 +171,35 @@ void Base_link::rx_push(){
   size_t topic_length = strlen(this->rx_topic);
   size_t body_length = strlen(this->rx_body);
   char c = 0x00;
-  waiter(this->rx_push_lock);
-  for (unsigned int n = 0; n < Base_link::rx_topic_length + Base_link::rx_body_length; n++){
-    if (n < Base_link::rx_topic_length){
-      if (n < topic_length){
-        c = this->rx_topic[n];
-      } else {
-        c = 0x00;
-      }
-    } else {
-      if (n - Base_link::rx_topic_length < body_length){
-        c = this->rx_body[n - Base_link::rx_topic_length];
-      } else {
-        c = 0x00;
-      }
-    }
-    this->rx_loop_buffer[this->rx_push_n * (Base_link::rx_topic_length + Base_link::rx_body_length) + n] = c;
-  }
-  if (this->rx_push_n >= Base_link::rx_size - 1){
-    this->rx_push_n = 0;
+  if ((this->rx_pull_n > 0 && this->rx_push_n + 1 == this->rx_pull_n) ||
+    (this->rx_pull_n == 0 && this->rx_push_n == Base_link::rx_size - 1)){
+    this->rx_buffer_overflow = true;
+    this->logger << "rx buffer overflow!";
   } else {
-    this->rx_push_n++;
+    waiter(this->rx_push_lock);
+    for (unsigned int n = 0; n < Base_link::rx_topic_length + Base_link::rx_body_length; n++){
+      if (n < Base_link::rx_topic_length){
+        if (n < topic_length){
+          c = this->rx_topic[n];
+        } else {
+          c = 0x00;
+        }
+      } else {
+        if (n - Base_link::rx_topic_length < body_length){
+          c = this->rx_body[n - Base_link::rx_topic_length];
+        } else {
+          c = 0x00;
+        }
+      }
+      this->rx_loop_buffer[this->rx_push_n * (Base_link::rx_topic_length + Base_link::rx_body_length) + n] = c;
+    }
+    if (this->rx_push_n >= Base_link::rx_size - 1){
+      this->rx_push_n = 0;
+    } else {
+      this->rx_push_n++;
+    }
+    this->rx_buffer_overflow = false;
   }
-  std::cout << "rx_push_n: " << rx_push_n << std::endl;
 }
 
 Link_message Base_link::rx_pull(){
@@ -213,7 +224,6 @@ Link_message Base_link::rx_pull(){
       this->rx_pull_n++;
     }
     msg.flag = 1;
-    std::cout << "rx_pull_n: " << rx_pull_n << std::endl;
   }
   this->rx_push_lock = false;
   return msg;
@@ -225,9 +235,10 @@ bool Base_link::tx_push(Link_message msg){
   char c = 0x00;
   bool res = false;
   if (topic_length < Base_link::tx_topic_length - 1 && body_length < Base_link::tx_body_length - 1){
-    if ((this->tx_pull_n > 0 && this->tx_push_n == this->tx_pull_n + 1) ||
+    if ((this->tx_pull_n > 0 && this->tx_push_n + 1 == this->tx_pull_n) ||
         (this->tx_pull_n == 0 && this->tx_push_n == Base_link::tx_size - 1)){
         this->tx_buffer_overflow = true;
+        this->logger << "tx buffer overflow!";
       } else {
       waiter(this->tx_push_lock);
       for (unsigned int n = 0; n < Base_link::tx_topic_length + Base_link::tx_body_length; n++){
@@ -251,7 +262,6 @@ bool Base_link::tx_push(Link_message msg){
       } else {
         this->tx_push_n++;
       }
-      std::cout << "tx_push_n: " << tx_push_n << std::endl;
       this->tx_buffer_overflow = false;
       res = true;
     }
@@ -279,8 +289,9 @@ void Base_link::tx_pull(){
       this->tx_pull_n++;
     }
     this->tx_push_lock = false;
-    this->client_tx();
-    std::cout << "tx_pull_n: " << tx_pull_n << std::endl;
+    this->tx_buffer_is_empty = false;
+  } else {
+    this->tx_buffer_is_empty = true;
   }
 }
 

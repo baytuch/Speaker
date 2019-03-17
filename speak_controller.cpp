@@ -60,9 +60,10 @@ bool Speak_controller::tell(const char *oration){
   size_t oration_length = strlen(oration);
   char c = 0x00;
   if (oration_length < Speak_controller::say_length){
-    if ((this->pull_n > 0 && this->push_n == this->pull_n + 1) ||
+    if ((this->pull_n > 0 && this->push_n + 1 == this->pull_n) ||
         (this->pull_n == 0 && this->push_n == Speak_controller::say_size - 1)){
         this->buffer_overflow = true;
+        this->logger << "buffer overflow!";
       } else {
       for (unsigned int n = 0; n < Speak_controller::say_length; n++){
         if (n < oration_length){

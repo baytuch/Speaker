@@ -36,11 +36,13 @@ class Base_link {
     bool mqtt_ssl;
     bool link_run;
     bool link_is_stop;
+    bool init_flag;
     bool client_subscribe_status;
     bool client_rx_status;
     bool client_tx_status;
     bool rx_push_lock;
     bool tx_push_lock;
+    bool tx_buffer_is_empty;
     bool rx_buffer_overflow;
     bool tx_buffer_overflow;
     pthread_t loop_tid;

@@ -26,7 +26,7 @@ int main(){
 
   while(true) {
     Link_message msg = bl.rx();
-    bl.tx(tx_msg);
+    //bl.tx(tx_msg);
     if (msg.flag){
       oration = smt.compiler(msg.body);
       logger << oration;
