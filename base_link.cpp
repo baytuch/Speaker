@@ -191,7 +191,7 @@ void Base_link::rx_push(){
   std::cout << "rx_push_n: " << rx_push_n << std::endl;
 }
 
-Link_message Base_link::rx(){
+Link_message Base_link::rx_pull(){
   Link_message msg;
   msg.topic = strinit(Base_link::rx_topic_length);
   msg.body = strinit(Base_link::rx_body_length);
@@ -219,7 +219,7 @@ Link_message Base_link::rx(){
   return msg;
 }
 
-bool Base_link::tx(Link_message msg){
+bool Base_link::tx_push(Link_message msg){
   size_t topic_length = strlen(msg.topic);
   size_t body_length = strlen(msg.body);
   char c = 0x00;
@@ -282,6 +282,14 @@ void Base_link::tx_pull(){
     this->client_tx();
     std::cout << "tx_pull_n: " << tx_pull_n << std::endl;
   }
+}
+
+bool Base_link::tx(Link_message msg){
+  return this->tx_push(msg);
+}
+
+Link_message Base_link::rx(){
+  return this->rx_pull();
 }
 
 void Base_link::stop(){

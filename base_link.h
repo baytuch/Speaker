@@ -61,6 +61,8 @@ class Base_link {
     void client_rx();
     void client_tx();
     void rx_push();
+    Link_message rx_pull();
+    bool tx_push(Link_message msg);
     void tx_pull();
 
 };
