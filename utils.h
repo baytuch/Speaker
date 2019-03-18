@@ -4,6 +4,7 @@
 
 char *strcopy(const char *source);
 char *strinit(const unsigned int str_size);
+char *numtostr(const int num);
 wchar_t *w_strinit(const unsigned int str_size);
 void free_mem(void *ptr);
 void waiter(bool &flag);

@@ -17,7 +17,21 @@ const unsigned int Base_link::tx_body_length = 128;
 const unsigned int Base_link::tx_size = 64;
 
 Base_link::Base_link(const char *host, const unsigned int &port, const bool &ssl){
-  this->mqtt_host = strcopy(host);
+  size_t uri_len = 6 + strlen(host) + 1 + 15;
+  const char *tcp_prefix = "tcp://";
+  const char *ssl_prefix = "ssl://";
+  const char *port_sep = ":";
+  char *port_str = numtostr(port);
+  this->mqtt_uri = strinit(uri_len);
+  if (ssl){
+    strcat(this->mqtt_uri, ssl_prefix);
+  } else {
+    strcat(this->mqtt_uri, tcp_prefix);
+  }
+  strcat(this->mqtt_uri, host);
+  strcat(this->mqtt_uri, port_sep);
+  strcat(this->mqtt_uri, port_str);
+  free_mem(port_str);
   this->rx_loop_buffer = strinit((Base_link::rx_topic_length + Base_link::rx_body_length) * Base_link::rx_size);
   this->tx_loop_buffer = strinit((Base_link::tx_topic_length + Base_link::tx_body_length) * Base_link::tx_size);
   this->rx_topic = strinit(Base_link::rx_topic_length);
@@ -91,7 +105,7 @@ void Base_link::client_subscribe(const char *topic){
   MQTTClient client;
   MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
   this->client_subscribe_status = false;
-  MQTTClient_create(&client, this->mqtt_host, Base_link::mqtt_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+  MQTTClient_create(&client, this->mqtt_uri, Base_link::mqtt_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
   conn_opts.keepAliveInterval = 20;
   conn_opts.cleansession = 0;
   if (MQTTClient_connect(client, &conn_opts) == MQTTCLIENT_SUCCESS){
@@ -115,7 +129,7 @@ void Base_link::client_rx(){
   int topic_len = 0;
   int body_len = 0;
   this->client_rx_status = false;
-  MQTTClient_create(&client, this->mqtt_host, Base_link::mqtt_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+  MQTTClient_create(&client, this->mqtt_uri, Base_link::mqtt_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
   conn_opts.keepAliveInterval = 20;
   conn_opts.cleansession = 0;
   memset(this->rx_topic, 0x00, Base_link::rx_topic_length);
@@ -147,7 +161,7 @@ void Base_link::client_tx(){
   MQTTClient_message pubmsg = MQTTClient_message_initializer;
   MQTTClient_deliveryToken token;
   this->client_tx_status = false;
-  MQTTClient_create(&client, this->mqtt_host, Base_link::mqtt_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+  MQTTClient_create(&client, this->mqtt_uri, Base_link::mqtt_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
   conn_opts.keepAliveInterval = 20;
   conn_opts.cleansession = 0;
   if (MQTTClient_connect(client, &conn_opts) == MQTTCLIENT_SUCCESS){

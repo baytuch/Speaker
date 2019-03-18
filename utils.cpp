@@ -1,5 +1,6 @@
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "sleep.h"
 #include "utils.h"
@@ -17,6 +18,15 @@ char *strinit(const unsigned int str_size){
   char *res;
   res = (char*) malloc((size_t) (str_size + 1) * sizeof(char));
   memset(res, 0x00, (size_t) (str_size + 1) * sizeof(char));
+  return res;
+}
+
+char *numtostr(const int num){
+  const size_t num_size = 15;
+  char *res;
+  res = (char*) malloc((size_t) (num_size + 1) * sizeof(char));
+  memset(res, 0x00, (size_t) (num_size + 1) * sizeof(char));
+  sprintf(res, "%d", num);
   return res;
 }
 

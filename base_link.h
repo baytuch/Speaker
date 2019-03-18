@@ -21,7 +21,7 @@ class Base_link {
     void stop();
 
   private:
-    char *mqtt_host;
+    char *mqtt_uri;
     char *rx_loop_buffer;
     char *tx_loop_buffer;
     char *rx_topic;
