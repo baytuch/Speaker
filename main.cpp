@@ -11,7 +11,7 @@
 int main(){
 
   Configer cfg = Configer();
-  Base_link bl = Base_link("mqtt.it-hobby.km.ua", 1883, false);
+  Base_link bl = Base_link("mqtt.it-hobby.km.ua", 1883, false, "/iris/voice/");
   Speak_controller sc = Speak_controller();
   Semantic smt = Semantic("smt.json");
   Logger logger("CORE");

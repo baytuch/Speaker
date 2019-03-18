@@ -16,7 +16,7 @@ const unsigned int Base_link::tx_topic_length = 32;
 const unsigned int Base_link::tx_body_length = 128;
 const unsigned int Base_link::tx_size = 64;
 
-Base_link::Base_link(const char *host, const unsigned int &port, const bool &ssl){
+Base_link::Base_link(const char *host, const unsigned int &port, const bool &ssl, const char *sub_topic){
   size_t uri_len = 6 + strlen(host) + 1 + 15;
   const char *tcp_prefix = "tcp://";
   const char *ssl_prefix = "ssl://";
@@ -32,6 +32,7 @@ Base_link::Base_link(const char *host, const unsigned int &port, const bool &ssl
   strcat(this->mqtt_uri, port_sep);
   strcat(this->mqtt_uri, port_str);
   free_mem(port_str);
+  this->mqtt_sub_topic = strcopy(sub_topic);
   this->rx_loop_buffer = strinit((Base_link::rx_topic_length + Base_link::rx_body_length) * Base_link::rx_size);
   this->tx_loop_buffer = strinit((Base_link::tx_topic_length + Base_link::tx_body_length) * Base_link::tx_size);
   this->rx_topic = strinit(Base_link::rx_topic_length);
@@ -85,7 +86,7 @@ void Base_link::link_init(){
 
 void Base_link::link_do(){
   if (this->init_flag){
-    this->client_subscribe("/test");
+    this->client_subscribe(this->mqtt_sub_topic);
   } else {
     if (!this->rx_buffer_overflow) this->client_rx();
     if (this->client_rx_status) this->rx_push();

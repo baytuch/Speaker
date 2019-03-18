@@ -14,7 +14,7 @@ struct Link_message {
 class Base_link {
 
   public:
-    Base_link(const char *host, const unsigned int &port, const bool &ssl);
+    Base_link(const char *host, const unsigned int &port, const bool &ssl, const char *sub_topic);
     ~Base_link();
     Link_message rx();
     bool tx(Link_message msg);
@@ -22,6 +22,7 @@ class Base_link {
 
   private:
     char *mqtt_uri;
+    char *mqtt_sub_topic;
     char *rx_loop_buffer;
     char *tx_loop_buffer;
     char *rx_topic;
